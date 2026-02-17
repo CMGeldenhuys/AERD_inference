@@ -18,6 +18,7 @@ A deep learning system for automatically detecting, classifying, and endpointing
 PyTorch Hub automatically handles downloading and installing the required code. No additional installations beyond PyTorch are needed.
 
 ```python
+# Required dependencies: numpy torch torchaudio
 import torch
 
 # Load a pretrained model (single fold, downloads weights automatically)
