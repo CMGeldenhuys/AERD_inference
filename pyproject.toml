@@ -49,5 +49,8 @@ dev = [
 Homepage = "https://github.com/CMGeldenhuys/AERD_inference"
 Issues = "https://github.com/CMGeldenhuys/AERD_inference/issues"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["aerd_inference"]
