@@ -21,8 +21,9 @@ def test_weight_variants_have_required_properties(w):
     assert isinstance(w.class_labels, dict) and len(w.class_labels) > 0
     assert isinstance(w.file_hashes, dict) and len(w.file_hashes) > 0
     assert isinstance(w.meta, dict)
-    assert isinstance(w.version, str) and len(w.version) > 0
-    assert isinstance(w.url_template, str) and "{version}" in w.url_template
+    assert isinstance(w.tag_version, str) and len(w.tag_version) > 0
+    assert isinstance(w.model_version, str) and len(w.model_version) > 0
+    assert isinstance(w.url_template, str) and "{tag_version}" in w.url_template
 
 
 @pytest.mark.parametrize("w", _CANONICAL_VARIANTS, ids=lambda w: w.name)

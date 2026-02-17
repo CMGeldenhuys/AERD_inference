@@ -29,8 +29,9 @@ class AERD_Weights(Enum):
     Available pretrained weights for AERD models.
 
     Each weight variant contains:
-    - url_template: URL template with {version} and {fold} placeholders
-    - version: Default version tag
+    - url_template: URL template with {tag_version}, {model_version}, and {fold} placeholders
+    - tag_version: GitHub release tag (e.g. "1.0.0" for /download/v1.0.0/)
+    - model_version: Weights version in filename (e.g. "1" for _v1-)
     - num_classes: Number of output classes
     - num_folds: Number of k-fold splits
     - class_labels: Mapping from class index to label name
@@ -38,8 +39,9 @@ class AERD_Weights(Enum):
     """
 
     EV_CALL = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_call_ko{{fold}}_v{{version}}-{{hash}}.pt",
-        "version": "1",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{tag_version}}/aerd_ev_call_ko{{fold}}_v{{model_version}}-{{hash}}.pt",
+        "tag_version": "1.0.0",
+        "model_version": "1",
         "num_classes": 5,
         "num_folds": 5,
         "class_labels": LABEL_MAPS[("elephant-voices", "call")],
@@ -55,8 +57,9 @@ class AERD_Weights(Enum):
     }
 
     EV_SUBCALL = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_subcall_ko{{fold}}_v{{version}}-{{hash}}.pt",
-        "version": "1",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{tag_version}}/aerd_ev_subcall_ko{{fold}}_v{{model_version}}-{{hash}}.pt",
+        "tag_version": "1.0.0",
+        "model_version": "1",
         "num_classes": 8,
         "num_folds": 5,
         "class_labels": LABEL_MAPS[("elephant-voices", "subcall")],
@@ -72,8 +75,9 @@ class AERD_Weights(Enum):
     }
 
     EV_BINARY = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_binary_ko{{fold}}_v{{version}}-{{hash}}.pt",
-        "version": "1",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{tag_version}}/aerd_ev_binary_ko{{fold}}_v{{model_version}}-{{hash}}.pt",
+        "tag_version": "1.0.0",
+        "model_version": "1",
         "num_classes": 2,
         "num_folds": 5,
         "class_labels": LABEL_MAPS[("elephant-voices", "binary")],
@@ -89,8 +93,9 @@ class AERD_Weights(Enum):
     }
 
     LDC_POOLE = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ldc_poole_ko{{fold}}_v{{version}}-{{hash}}.pt",
-        "version": "1",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{tag_version}}/aerd_ldc_poole_ko{{fold}}_v{{model_version}}-{{hash}}.pt",
+        "tag_version": "1.0.0",
+        "model_version": "1",
         "num_classes": 6,
         "num_folds": 10,
         "class_labels": LABEL_MAPS[("asian-voc", "poole")],
@@ -108,8 +113,9 @@ class AERD_Weights(Enum):
     }
 
     LDC_BINARY = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ldc_binary_ko{{fold}}_v{{version}}-{{hash}}.pt",
-        "version": "1",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{tag_version}}/aerd_ldc_binary_ko{{fold}}_v{{model_version}}-{{hash}}.pt",
+        "tag_version": "1.0.0",
+        "model_version": "1",
         "num_classes": 2,
         "num_folds": 10,
         "class_labels": LABEL_MAPS[("asian-voc", "binary")],
@@ -136,8 +142,12 @@ class AERD_Weights(Enum):
         return self.value["url_template"]
 
     @property
-    def version(self) -> str:
-        return self.value["version"]
+    def tag_version(self) -> str:
+        return self.value["tag_version"]
+
+    @property
+    def model_version(self) -> str:
+        return self.value["model_version"]
 
     @property
     def num_classes(self) -> int:
@@ -161,9 +171,10 @@ class AERD_Weights(Enum):
 
     def get_url(self, fold: int, version: str | None = None) -> str:
         """Build the download URL for a specific fold and version."""
-        v = version or self.version
+        tag_v = version or self.tag_version
+        model_v = version or self.model_version
         file_hash = self.file_hashes.get(fold, "")
-        return self.url_template.format(version=v, fold=fold, hash=file_hash)
+        return self.url_template.format(tag_version=tag_v, model_version=model_v, fold=fold, hash=file_hash)
 
 
 def _load_weights(
