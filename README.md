@@ -6,8 +6,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 
-<!-- Banner placeholder -->
-<!--![Learning to Rumble Banner](assets/banner.png)-->
+<img src="assets/banner.jpeg" alt="Learning to Rumble Banner" style="max-height: 320px; width: 100%; object-fit: cover;" />
 
 A deep learning system for automatically detecting, classifying, and endpointing elephant calls in continuous audio recordings. Elephants communicate using a rich vocal repertoire — from low-frequency rumbles that travel kilometres to trumpets and roars — and understanding these calls is key to monitoring their behaviour and supporting conservation efforts. This system uses an audio spectrogram transformer (AST) with transfer learning to perform frame-level call detection and classify calls into types (e.g. rumble, trumpet, roar) and sub-call categories, achieving state-of-the-art results on both Asian and African elephant vocalisation datasets.
 
