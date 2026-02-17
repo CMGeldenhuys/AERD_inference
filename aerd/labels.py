@@ -3,6 +3,16 @@ Known label mappings for AERD models.
 
 Label schemes follow the Poole 2011 taxonomy. The ann_ids are assigned
 sequentially based on which labels appear in each dataset.
+
+Terminology
+-----------
+- **Forward mapping** (``{str_label: int_index}``): used by training code's
+  ``target_mapping`` attribute — maps human-readable labels to class indices.
+- **Reverse mapping** (``{int_index: str_label}``): used at inference time to
+  look up a human-readable label from a predicted class index.
+
+``LABEL_MAPS`` stores **reverse mappings** so they can be used directly for
+index → label lookups in :class:`~aerd.model.AERDClassifier`.
 """
 
 from __future__ import annotations
