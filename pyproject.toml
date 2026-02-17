@@ -1,0 +1,53 @@
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "."
+source-include = ["assets/**"]
+
+[project]
+name = "aerd"
+version = "0.0.1"
+authors = [
+  { name="Christiaan M. Geldenhuys", email="cmgeldenhuys@sun.ac.za" },
+]
+description = "Learning to rumble: Automated elephant call classification, detection and endpointing using deep architectures"
+readme = "README.md"
+requires-python = ">=3.8,<3.12"
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "numpy>=1.24.0",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/CMGeldenhuys/AERD_inference"
+Issues = "https://github.com/CMGeldenhuys/AERD_inference/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["aerd"]
