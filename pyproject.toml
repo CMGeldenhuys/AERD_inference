@@ -8,7 +8,7 @@ source-include = ["assets/**"]
 
 [project]
 name = "aerd_inference"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
   { name="Christiaan M. Geldenhuys", email="cmgeldenhuys@sun.ac.za" },
 ]
