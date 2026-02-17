@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from aerd_inference.model import AERDClassifier
+from aerd.model import AERDClassifier
 
 
 class TestForward:

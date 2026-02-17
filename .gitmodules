@@ -1,4 +1,4 @@
-[submodule "aerd_inference/beats/unilm"]
-	path = aerd_inference/beats/unilm
+[submodule "aerd/beats/unilm"]
+	path = aerd/beats/unilm
 	url = https://github.com/CMGeldenhuys/unilm.git
 	branch = beats-trainer

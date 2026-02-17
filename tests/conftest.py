@@ -3,8 +3,8 @@
 import pytest
 import torch
 
-from aerd_inference.labels import LABEL_MAPS
-from aerd_inference.model import AERDClassifier
+from aerd.labels import LABEL_MAPS
+from aerd.model import AERDClassifier
 
 
 _EV_CALL_LABELS = LABEL_MAPS[("elephant-voices", "call")]

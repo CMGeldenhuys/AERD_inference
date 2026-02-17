@@ -11,6 +11,6 @@ Usage:
 
 dependencies = ["torch", "torchaudio"]
 
-from aerd_inference.weights import AERD_Weights, aerd, aerd_ensemble
+from aerd.weights import AERD_Weights, aerd, aerd_ensemble
 
 __all__ = ["aerd", "aerd_ensemble", "AERD_Weights"]

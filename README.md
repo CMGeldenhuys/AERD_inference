@@ -52,12 +52,12 @@ label_dict = model.predict(audio, output="dict")
 Install the package to access ensemble (k-fold) prediction and all available weight variants:
 
 ```sh
-pip install aerd_inference
+pip install aerd
 ```
 
 ```python
 import torch
-from aerd_inference import aerd_ensemble, AERD_Weights
+from aerd import aerd_ensemble, AERD_Weights
 
 # Load all k-fold models for ensemble prediction
 models, preprocess = aerd_ensemble(weights=AERD_Weights.EV_CALL)
@@ -85,7 +85,7 @@ ensemble_probs = torch.stack([m.predict(audio) for m in models]).mean(dim=0)
 ### Option 1: Install via pip (Recommended)
 
 ```sh
-pip install aerd_inference
+pip install aerd
 ```
 
 ### Option 2: Install from source
