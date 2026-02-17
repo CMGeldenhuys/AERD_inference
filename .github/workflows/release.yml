@@ -24,7 +24,7 @@ jobs:
           enable-cache: true
 
       - name: Run tests
-        run: uv run pytest tests/ -v
+        run: uv run --extra dev pytest tests/ -v
 
   pypi:
     name: Publish to PyPI
