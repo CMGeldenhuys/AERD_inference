@@ -91,9 +91,9 @@ class TestPredictLabels:
             model_no_labels.predict_labels(dummy_audio)
 
     def test_predict_labels_threshold_zero(self, ev_call_model, dummy_audio):
-        result = ev_call_model.predict_labels(dummy_audio, threshold=0.0)
+        result = ev_call_model.predict_labels(dummy_audio, threshold=0.0, filter=None)
         all_labels = set(ev_call_model.class_labels.values())
-        # Every frame should contain all labels
+        # Every frame should contain all labels when filter is disabled
         for batch_item in result:
             for frame in batch_item:
                 assert set(frame) == all_labels
@@ -105,15 +105,28 @@ class TestPredictLabels:
             for frame in batch_item:
                 assert frame == []
 
-    def test_predict_labels_filter_excludes_label(self, ev_call_model, dummy_audio):
+    def test_predict_labels_filter_string(self, ev_call_model, dummy_audio):
+        result = ev_call_model.predict_labels(dummy_audio, threshold=0.0, filter="not-call")
+        for batch_item in result:
+            for frame in batch_item:
+                assert "not-call" not in frame
+
+    def test_predict_labels_filter_set(self, ev_call_model, dummy_audio):
         result = ev_call_model.predict_labels(dummy_audio, threshold=0.0, filter={"not-call"})
         for batch_item in result:
             for frame in batch_item:
                 assert "not-call" not in frame
 
-    def test_predict_labels_filter_none_default(self, ev_call_model, dummy_audio):
+    def test_predict_labels_default_filters_not_call(self, ev_call_model, dummy_audio):
         result = ev_call_model.predict_labels(dummy_audio, threshold=0.0)
-        # With threshold=0 all labels appear, including not-call
+        # Default filter excludes "not-call"
+        for batch_item in result:
+            for frame in batch_item:
+                assert "not-call" not in frame
+
+    def test_predict_labels_filter_none_includes_all(self, ev_call_model, dummy_audio):
+        result = ev_call_model.predict_labels(dummy_audio, threshold=0.0, filter=None)
+        # Explicitly passing None disables filtering, so not-call appears
         found = any("not-call" in frame for batch_item in result for frame in batch_item)
         assert found
 
@@ -175,7 +188,7 @@ class TestClassLabelNormalization:
 
     def test_predict_labels_with_forward_mapping(self, dummy_audio):
         model = AERDClassifier(num_classes=3, class_labels=self.FORWARD)
-        result = model.predict_labels(dummy_audio, threshold=0.0)
+        result = model.predict_labels(dummy_audio, threshold=0.0, filter=None)
         expected = {"not-call", "rumble", "roar"}
         for batch_item in result:
             for frame in batch_item:

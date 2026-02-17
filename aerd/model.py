@@ -293,7 +293,7 @@ class AERDClassifier(nn.Module):
         self,
         waveform: Tensor,
         threshold: float = 0.5,
-        filter: set[str] | list[str] | None = None,
+        filter: str | set[str] | list[str] | None = "not-call",
     ) -> list[list[str]] | list[list[list[str]]]:
         """
         Return class labels with probability above threshold.
@@ -301,7 +301,9 @@ class AERDClassifier(nn.Module):
         Args:
             waveform: Raw audio tensor (batch, samples) or (samples,).
             threshold: Probability threshold (default 0.5).
-            filter: Labels to exclude from the output. Default None (no filtering).
+            filter: Labels to exclude from the output. Accepts a single label
+                string, a set/list of labels, or None to disable filtering.
+                Defaults to ``"not-call"``.
 
         Returns:
             If predictor produces per-frame output (seq, seq-spec, seq-full):
@@ -317,7 +319,7 @@ class AERDClassifier(nn.Module):
 
         above = probs >= threshold
 
-        exclude = set(filter) if filter is not None else set()
+        exclude = {filter} if isinstance(filter, str) else set(filter) if filter is not None else set()
 
         has_time = self.predictor_type in ("seq", "seq-spec", "seq-full")
 
