@@ -106,6 +106,63 @@ class TestPredictLabels:
                 assert frame == []
 
 
+class TestClassLabelNormalization:
+    """Test that class_labels accepts both forward and reverse mappings."""
+
+    REVERSE = {0: "not-call", 1: "rumble", 2: "roar"}
+    FORWARD = {"not-call": 0, "rumble": 1, "roar": 2}
+
+    def test_reverse_mapping_stored_as_is(self):
+        model = AERDClassifier(num_classes=3, class_labels=self.REVERSE)
+        assert model.class_labels == self.REVERSE
+        assert model.class_indexes == self.FORWARD
+
+    def test_forward_mapping_inverted(self):
+        model = AERDClassifier(num_classes=3, class_labels=self.FORWARD)
+        assert model.class_labels == self.REVERSE
+        assert model.class_indexes == self.FORWARD
+
+    def test_none_labels(self):
+        model = AERDClassifier(num_classes=3, class_labels=None)
+        assert model.class_labels is None
+        assert model.class_indexes is None
+
+    def test_get_class_label(self):
+        model = AERDClassifier(num_classes=3, class_labels=self.REVERSE)
+        assert model.get_class_label(0) == "not-call"
+        assert model.get_class_label(1) == "rumble"
+        assert model.get_class_label(2) == "roar"
+
+    def test_get_class_index(self):
+        model = AERDClassifier(num_classes=3, class_labels=self.REVERSE)
+        assert model.get_class_index("not-call") == 0
+        assert model.get_class_index("rumble") == 1
+        assert model.get_class_index("roar") == 2
+
+    def test_get_class_label_no_labels_raises(self):
+        model = AERDClassifier(num_classes=3, class_labels=None)
+        with pytest.raises(ValueError, match="class_labels"):
+            model.get_class_label(0)
+
+    def test_get_class_index_no_labels_raises(self):
+        model = AERDClassifier(num_classes=3, class_labels=None)
+        with pytest.raises(ValueError, match="class_indexes"):
+            model.get_class_index("rumble")
+
+    def test_predict_dict_with_forward_mapping(self, dummy_audio):
+        model = AERDClassifier(num_classes=3, class_labels=self.FORWARD)
+        result = model.predict(dummy_audio, output="dict")
+        assert set(result.keys()) == {"not-call", "rumble", "roar"}
+
+    def test_predict_labels_with_forward_mapping(self, dummy_audio):
+        model = AERDClassifier(num_classes=3, class_labels=self.FORWARD)
+        result = model.predict_labels(dummy_audio, threshold=0.0)
+        expected = {"not-call", "rumble", "roar"}
+        for batch_item in result:
+            for frame in batch_item:
+                assert set(frame) == expected
+
+
 class TestMisc:
     def test_sample_rate(self):
         assert AERDClassifier.SAMPLE_RATE == 16_000
