@@ -7,7 +7,7 @@ module-root = "."
 source-include = ["assets/**"]
 
 [project]
-name = "aerd"
+name = "aerd_inference"
 version = "0.0.1"
 authors = [
   { name="Christiaan M. Geldenhuys", email="cmgeldenhuys@sun.ac.za" },
@@ -50,4 +50,4 @@ Homepage = "https://github.com/CMGeldenhuys/AERD_inference"
 Issues = "https://github.com/CMGeldenhuys/AERD_inference/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["aerd"]
+packages = ["aerd_inference"]
