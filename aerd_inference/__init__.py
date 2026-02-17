@@ -16,7 +16,12 @@ from .beats import (
     beats_extract_features,
 )
 
-__version__ = "1.0.0"
+import importlib.metadata
+
+try:
+    __version__ = importlib.metadata.version("aerd_inference")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.0.0"  # Fallback for development mode
 
 __all__ = [
     # Main API

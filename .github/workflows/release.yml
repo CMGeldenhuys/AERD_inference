@@ -5,6 +5,9 @@ on:
     tags:
       - v*
 
+env:
+  UV_TORCH_BACKEND: cpu
+
 jobs:
   test:
     name: Run tests
