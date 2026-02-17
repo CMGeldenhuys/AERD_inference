@@ -7,12 +7,7 @@ from torch import Tensor
 from torch.nn import Parameter
 from torch.nn.utils.rnn import PackedSequence, pad_packed_sequence
 
-try:
-    from .unilm.beats import BEATs, BEATsConfig
-
-except ImportError as e:
-    print(f"BEATs submodule not found, please initialise git submodules: {e}")
-    raise e
+from .unilm.beats import BEATs, BEATsConfig
 
 
 def build_beats_model(
