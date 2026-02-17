@@ -9,7 +9,7 @@ Usage:
     >>> probs = torch.sigmoid(logits)
 """
 
-dependencies = ["torch", "torchaudio"]
+dependencies = ["torch", "torchaudio", "numpy"]
 
 from aerd.weights import AERD_Weights, aerd, aerd_ensemble
 
