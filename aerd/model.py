@@ -59,7 +59,8 @@ class AERDClassifier(nn.Module):
         fbank_std: Standard deviation for fbank normalization.
         predictor_type: Type of predictor head ('seq', 'label', 'seq-spec', 'seq-full').
         beats_config: BEATs configuration dict (uses default if None).
-        class_labels: Mapping from class index to label name.
+        class_labels: Label mapping — accepts either reverse ``{int_index: str_label}``
+            or forward ``{str_label: int_index}`` orientation; normalized internally.
         dataset_info: Metadata about the training dataset and fold.
     """
 
@@ -72,7 +73,7 @@ class AERDClassifier(nn.Module):
         fbank_std: float = 2.9366,
         predictor_type: str = "seq",
         beats_config: dict | None = None,
-        class_labels: dict[int, str] | None = None,
+        class_labels: dict[int, str] | dict[str, int] | None = None,
         dataset_info: dict | None = None,
     ):
         super().__init__()
@@ -80,8 +81,23 @@ class AERDClassifier(nn.Module):
         self.fbank_mean = fbank_mean
         self.fbank_std = fbank_std
         self.predictor_type = predictor_type
-        self.class_labels = class_labels
         self.dataset_info = dataset_info
+
+        # Normalize class_labels to {int_index: str_label} (reverse mapping)
+        # and store the inverse as class_indexes {str_label: int_index} (forward mapping).
+        if class_labels is not None:
+            first_key = next(iter(class_labels))
+            if isinstance(first_key, str):
+                # Forward mapping {str_label: int_index} — invert it
+                self.class_labels: dict[int, str] | None = {v: k for k, v in class_labels.items()}
+                self.class_indexes: dict[str, int] | None = dict(class_labels)
+            else:
+                # Already reverse mapping {int_index: str_label}
+                self.class_labels = dict(class_labels)
+                self.class_indexes = {v: k for k, v in class_labels.items()}
+        else:
+            self.class_labels = None
+            self.class_indexes = None
 
         # Build BEATs backbone with config
         if beats_config is None:
@@ -138,6 +154,18 @@ class AERDClassifier(nn.Module):
             )
         else:
             raise ValueError(f"Unknown predictor type: {predictor_type}")
+
+    def get_class_label(self, index: int) -> str:
+        """Look up the string label for a class index."""
+        if self.class_labels is None:
+            raise ValueError("class_labels not available.")
+        return self.class_labels[index]
+
+    def get_class_index(self, label: str) -> int:
+        """Look up the integer index for a class label."""
+        if self.class_indexes is None:
+            raise ValueError("class_indexes not available.")
+        return self.class_indexes[label]
 
     def preprocess(
         self,
@@ -255,7 +283,7 @@ class AERDClassifier(nn.Module):
                         "Load model with AERD_Weights enum to include labels."
                     )
                 return {
-                    self.class_labels[i]: probs[..., i]
+                    self.get_class_label(i): probs[..., i]
                     for i in range(self.num_classes)
                 }
             else:
@@ -293,7 +321,7 @@ class AERDClassifier(nn.Module):
             # probs shape: (batch, time, classes)
             return [
                 [
-                    [self.class_labels[i] for i in frame.nonzero(as_tuple=True)[0].tolist()]
+                    [self.get_class_label(i) for i in frame.nonzero(as_tuple=True)[0].tolist()]
                     for frame in batch_item
                 ]
                 for batch_item in above
@@ -301,7 +329,7 @@ class AERDClassifier(nn.Module):
         else:
             # probs shape: (batch, classes)
             return [
-                [self.class_labels[i] for i in row.nonzero(as_tuple=True)[0].tolist()]
+                [self.get_class_label(i) for i in row.nonzero(as_tuple=True)[0].tolist()]
                 for row in above
             ]
 
