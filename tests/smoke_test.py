@@ -1,4 +1,4 @@
-"""Smoke test for installed aerd_inference package.
+"""Smoke test for installed aerd package.
 
 Runs outside the repo (--no-project) to verify the built distribution
 includes all necessary files and the public API is importable.
@@ -9,7 +9,7 @@ import sys
 
 def main() -> None:
     # Core imports
-    from aerd_inference import (
+    from aerd import (
         AERDClassifier,
         AERD_Weights,
         aerd,

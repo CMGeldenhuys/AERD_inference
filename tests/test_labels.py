@@ -2,7 +2,7 @@
 
 import pytest
 
-from aerd_inference.labels import LABEL_MAPS, get_class_labels
+from aerd.labels import LABEL_MAPS, get_class_labels
 
 
 _EXPECTED_KEYS = [

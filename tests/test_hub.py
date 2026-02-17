@@ -5,8 +5,8 @@ from unittest.mock import patch
 import torch
 
 import hubconf
-from aerd_inference.model import AERDClassifier
-from aerd_inference.weights import aerd, aerd_ensemble
+from aerd.model import AERDClassifier
+from aerd.weights import aerd, aerd_ensemble
 
 
 def test_aerd_returns_model_and_preprocess():
@@ -28,7 +28,7 @@ def test_aerd_ensemble_returns_list_and_preprocess():
         "hyper_parameters": {"num_classes": 5, "predictor": "seq"},
         "state_dict": AERDClassifier(num_classes=5).state_dict(),
     }
-    with patch("aerd_inference.weights._load_weights", return_value=fake_ckpt):
+    with patch("aerd.weights._load_weights", return_value=fake_ckpt):
         models, preprocess = aerd_ensemble(folds=[1, 2])
     assert isinstance(models, list) and len(models) == 2
     for m in models:

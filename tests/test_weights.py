@@ -2,7 +2,7 @@
 
 import pytest
 
-from aerd_inference.weights import AERD_Weights
+from aerd.weights import AERD_Weights
 
 
 _CANONICAL_VARIANTS = [
