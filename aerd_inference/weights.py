@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 # GitHub Release URL template
 # Update this URL when publishing new releases
-_WEIGHTS_URL_BASE = "https://github.com/CMGeldenhuys/AERD/releases/download"
+_WEIGHTS_URL_BASE = "https://github.com/CMGeldenhuys/AERD_inference/releases/download"
 
 
 class AERD_Weights(Enum):
@@ -38,11 +38,15 @@ class AERD_Weights(Enum):
     """
 
     EV_CALL = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_call_ko{{fold}}_v{{version}}.pt",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_call_ko{{fold}}_v{{version}}-{{hash}}.pt",
         "version": "1",
         "num_classes": 5,
         "num_folds": 5,
         "class_labels": LABEL_MAPS[("elephant-voices", "call")],
+        "file_hashes": {
+            1: "5876c7c3", 2: "75efa98e", 3: "5cc3c744",
+            4: "48b2294d", 5: "9420e0de",
+        },
         "meta": {
             "dataset": "elephant-voices",
             "variant": "call",
@@ -51,11 +55,15 @@ class AERD_Weights(Enum):
     }
 
     EV_SUBCALL = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_subcall_ko{{fold}}_v{{version}}.pt",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_subcall_ko{{fold}}_v{{version}}-{{hash}}.pt",
         "version": "1",
         "num_classes": 8,
         "num_folds": 5,
         "class_labels": LABEL_MAPS[("elephant-voices", "subcall")],
+        "file_hashes": {
+            1: "060becac", 2: "20877eaa", 3: "8e3b703e",
+            4: "38886767", 5: "b640338b",
+        },
         "meta": {
             "dataset": "elephant-voices",
             "variant": "subcall",
@@ -64,11 +72,15 @@ class AERD_Weights(Enum):
     }
 
     EV_BINARY = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_binary_ko{{fold}}_v{{version}}.pt",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ev_binary_ko{{fold}}_v{{version}}-{{hash}}.pt",
         "version": "1",
         "num_classes": 2,
         "num_folds": 5,
         "class_labels": LABEL_MAPS[("elephant-voices", "binary")],
+        "file_hashes": {
+            1: "d583165d", 2: "0c7fe335", 3: "4ca10435",
+            4: "97ae4718", 5: "eceda608",
+        },
         "meta": {
             "dataset": "elephant-voices",
             "variant": "binary",
@@ -77,11 +89,17 @@ class AERD_Weights(Enum):
     }
 
     LDC_POOLE = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ldc_poole_ko{{fold}}_v{{version}}.pt",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ldc_poole_ko{{fold}}_v{{version}}-{{hash}}.pt",
         "version": "1",
         "num_classes": 6,
         "num_folds": 10,
         "class_labels": LABEL_MAPS[("asian-voc", "poole")],
+        "file_hashes": {
+            1: "481a3595", 2: "768a7871", 3: "fe8caa30",
+            4: "3125e47e", 5: "f63a2396", 6: "d1dbcf1e",
+            7: "ee90ff8a", 8: "f4ed2466", 9: "90729160",
+            10: "94261f9c",
+        },
         "meta": {
             "dataset": "asian-voc",
             "variant": "poole",
@@ -90,11 +108,17 @@ class AERD_Weights(Enum):
     }
 
     LDC_BINARY = {
-        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ldc_binary_ko{{fold}}_v{{version}}.pt",
+        "url_template": f"{_WEIGHTS_URL_BASE}/v{{version}}/aerd_ldc_binary_ko{{fold}}_v{{version}}-{{hash}}.pt",
         "version": "1",
         "num_classes": 2,
         "num_folds": 10,
         "class_labels": LABEL_MAPS[("asian-voc", "binary")],
+        "file_hashes": {
+            1: "393ba94d", 2: "72245d4f", 3: "309f3e8c",
+            4: "3cb18507", 5: "ee816aac", 6: "61ea48e5",
+            7: "dfd66fd1", 8: "7a59b271", 9: "69e1c0ca",
+            10: "b9f3883d",
+        },
         "meta": {
             "dataset": "asian-voc",
             "variant": "binary",
@@ -102,7 +126,10 @@ class AERD_Weights(Enum):
         },
     }
 
-    DEFAULT = EV_CALL
+    DEFAULT_EV = EV_CALL      # Alias → loads EV call classification (fold 1 by default)
+    DEFAULT_LDC = LDC_POOLE   # Alias → loads LDC Poole classification (fold 1 by default)
+    ENSEMBLE_EV = EV_CALL     # Alias → semantic hint for ensemble use with aerd_ensemble()
+    ENSEMBLE_LDC = LDC_POOLE  # Alias → semantic hint for ensemble use with aerd_ensemble()
 
     @property
     def url_template(self) -> str:
@@ -128,10 +155,15 @@ class AERD_Weights(Enum):
     def meta(self) -> dict:
         return self.value["meta"]
 
+    @property
+    def file_hashes(self) -> dict[int, str]:
+        return self.value.get("file_hashes", {})
+
     def get_url(self, fold: int, version: str | None = None) -> str:
         """Build the download URL for a specific fold and version."""
         v = version or self.version
-        return self.url_template.format(version=v, fold=fold)
+        file_hash = self.file_hashes.get(fold, "")
+        return self.url_template.format(version=v, fold=fold, hash=file_hash)
 
 
 def _load_weights(
@@ -213,13 +245,12 @@ def _build_model_from_checkpoint(
     )
 
     model.load_state_dict(checkpoint["state_dict"])
-    model.source_path = checkpoint.get("source_path", None)
     model.eval()
     return model
 
 
 def aerd(
-    weights: AERD_Weights | str = AERD_Weights.DEFAULT,
+    weights: AERD_Weights | str = AERD_Weights.DEFAULT_EV,
     fold: int = 1,
     progress: bool = True,
 ) -> Tuple["AERDClassifier", Callable]:
@@ -230,7 +261,7 @@ def aerd(
 
     Args:
         weights: Pretrained weights to load. Can be:
-            - AERD_Weights.DEFAULT: Default pretrained weights
+            - AERD_Weights.DEFAULT_EV: Default pretrained weights (EV call classification)
             - A URL string to download weights from
             - A local file path to load weights from
         fold: Fold number to load (1-indexed). Only used with AERD_Weights enum.
@@ -242,7 +273,7 @@ def aerd(
 
     Example:
         >>> import torch
-        >>> model, preprocess = torch.hub.load("CMGeldenhuys/AERD", "aerd")
+        >>> model, preprocess = torch.hub.load("CMGeldenhuys/AERD_inference", "aerd")
         >>> audio = torch.randn(1, 16000 * 10)  # 10 seconds at 16kHz
         >>> logits = model(audio)
     """
@@ -260,7 +291,7 @@ def aerd(
 
 
 def aerd_ensemble(
-    weights: AERD_Weights = AERD_Weights.DEFAULT,
+    weights: AERD_Weights = AERD_Weights.DEFAULT_EV,
     folds: list[int] | None = None,
     progress: bool = True,
 ) -> Tuple[List["AERDClassifier"], Callable]:
