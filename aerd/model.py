@@ -283,7 +283,7 @@ class AERDClassifier(nn.Module):
                         "Load model with AERD_Weights enum to include labels."
                     )
                 return {
-                    self.class_labels[i]: probs[..., i]
+                    self.get_class_label(i): probs[..., i]
                     for i in range(self.num_classes)
                 }
             else:
@@ -321,7 +321,7 @@ class AERDClassifier(nn.Module):
             # probs shape: (batch, time, classes)
             return [
                 [
-                    [self.class_labels[i] for i in frame.nonzero(as_tuple=True)[0].tolist()]
+                    [self.get_class_label(i) for i in frame.nonzero(as_tuple=True)[0].tolist()]
                     for frame in batch_item
                 ]
                 for batch_item in above
@@ -329,7 +329,7 @@ class AERDClassifier(nn.Module):
         else:
             # probs shape: (batch, classes)
             return [
-                [self.class_labels[i] for i in row.nonzero(as_tuple=True)[0].tolist()]
+                [self.get_class_label(i) for i in row.nonzero(as_tuple=True)[0].tolist()]
                 for row in above
             ]
 
