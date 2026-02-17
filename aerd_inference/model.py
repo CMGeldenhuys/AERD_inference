@@ -225,20 +225,85 @@ class AERDClassifier(nn.Module):
             return logits, features
         return logits
 
-    def predict(self, waveform: Tensor) -> Tensor:
+    def predict(
+        self,
+        waveform: Tensor,
+        output: str = "tensor",
+    ) -> Tensor | Dict[str, Tensor]:
         """
         Convenience method for inference.
 
         Args:
             waveform: Raw audio tensor.
+            output: Output format — "tensor" returns probability tensor,
+                "dict" returns {label_name: probability_tensor}.
 
         Returns:
-            Probabilities for each class.
+            Probabilities as tensor or label-keyed dict.
         """
         self.eval()
         with torch.no_grad():
             logits = self.forward(waveform)
-            return torch.sigmoid(logits)
+            probs = torch.sigmoid(logits)
+
+            if output == "tensor":
+                return probs
+            elif output == "dict":
+                if self.class_labels is None:
+                    raise ValueError(
+                        "class_labels not available — cannot produce dict output. "
+                        "Load model with AERD_Weights enum to include labels."
+                    )
+                return {
+                    self.class_labels[i]: probs[..., i]
+                    for i in range(self.num_classes)
+                }
+            else:
+                raise ValueError(f"Unknown output format: {output!r}. Use 'tensor' or 'dict'.")
+
+    def predict_labels(
+        self,
+        waveform: Tensor,
+        threshold: float = 0.5,
+    ) -> list[list[str]] | list[list[list[str]]]:
+        """
+        Return class labels with probability above threshold.
+
+        Args:
+            waveform: Raw audio tensor (batch, samples) or (samples,).
+            threshold: Probability threshold (default 0.5).
+
+        Returns:
+            If predictor produces per-frame output (seq, seq-spec, seq-full):
+                list[list[list[str]]] — labels per frame per batch item.
+            If predictor produces single output (label):
+                list[list[str]] — one label list per batch item.
+        """
+        if self.class_labels is None:
+            raise ValueError(
+                "class_labels not available — cannot produce label output."
+            )
+        probs = self.predict(waveform, output="tensor")
+
+        above = probs >= threshold
+
+        has_time = self.predictor_type in ("seq", "seq-spec", "seq-full")
+
+        if has_time:
+            # probs shape: (batch, time, classes)
+            return [
+                [
+                    [self.class_labels[i] for i in frame.nonzero(as_tuple=True)[0].tolist()]
+                    for frame in batch_item
+                ]
+                for batch_item in above
+            ]
+        else:
+            # probs shape: (batch, classes)
+            return [
+                [self.class_labels[i] for i in row.nonzero(as_tuple=True)[0].tolist()]
+                for row in above
+            ]
 
     @classmethod
     def from_pretrained(
@@ -286,8 +351,5 @@ class AERDClassifier(nn.Module):
         # Load state dict
         state_dict = checkpoint["state_dict"]
         model.load_state_dict(state_dict)
-
-        # Store source path if available
-        model.source_path = checkpoint.get("source_path", None)
 
         return model
