@@ -105,6 +105,25 @@ class TestPredictLabels:
             for frame in batch_item:
                 assert frame == []
 
+    def test_predict_labels_filter_excludes_label(self, ev_call_model, dummy_audio):
+        result = ev_call_model.predict_labels(dummy_audio, threshold=0.0, filter={"not-call"})
+        for batch_item in result:
+            for frame in batch_item:
+                assert "not-call" not in frame
+
+    def test_predict_labels_filter_none_default(self, ev_call_model, dummy_audio):
+        result = ev_call_model.predict_labels(dummy_audio, threshold=0.0)
+        # With threshold=0 all labels appear, including not-call
+        found = any("not-call" in frame for batch_item in result for frame in batch_item)
+        assert found
+
+    def test_predict_labels_filter_all_returns_empty(self, ev_call_model, dummy_audio):
+        all_labels = set(ev_call_model.class_labels.values())
+        result = ev_call_model.predict_labels(dummy_audio, threshold=0.0, filter=all_labels)
+        for batch_item in result:
+            for frame in batch_item:
+                assert frame == []
+
 
 class TestClassLabelNormalization:
     """Test that class_labels accepts both forward and reverse mappings."""
